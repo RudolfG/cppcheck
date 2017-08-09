@@ -513,8 +513,21 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     platforms[*it]._platform_types[type_name] = type;
                 }
             }
-        }
 
+        }
+		else if (nodename == "include") {
+			const char * const include_name = node->Attribute("name");
+			if (include_name == nullptr)
+				return Error(MISSING_ATTRIBUTE, "name");
+			
+			const std::vector<std::string> names(getnames(include_name));
+			for (unsigned int i = 0U; i < names.size(); ++i) {
+				const Error &err = loadInclude(node, names[i], unknown_elements);
+
+				if (err.errorcode != ErrorCode::OK)
+					return err;
+			}
+		}
         else
             unknown_elements.insert(nodename);
     }
@@ -528,6 +541,29 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
         return Error(UNKNOWN_ELEMENT, str);
     }
     return Error(OK);
+}
+
+Library::Error Library::loadInclude(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements)
+{
+	if (name.empty())
+		return Error(OK);
+
+	std::string unifiedName = name;
+
+	std::transform(unifiedName.begin(), unifiedName.end(), unifiedName.begin(), ::toupper);
+
+	size_t found = unifiedName.find(".H");
+	
+	if (found != std::string::npos)
+		unifiedName.replace(found, std::string(".H").length(), "");
+
+	found = unifiedName.find(".HPP");
+
+	if (found != std::string::npos)
+		unifiedName.replace(found, std::string(".HPP").length(), "");
+
+	includes.insert(unifiedName);
+	return Error(OK);
 }
 
 Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements)
@@ -1071,6 +1107,31 @@ bool Library::isFunctionConst(const std::string& functionName, bool pure) const
     if (it != functions.cend())
         return pure ? it->second.ispure : it->second.isconst;
     return false;
+}
+
+bool Library::isSystemIncludeInConfigFile(const std::string& includeName) const
+{
+	if (includeName.empty())
+		return true;
+
+	if (includes.empty())
+		return false;
+
+	std::string unifiedName = includeName;
+
+	std::transform(unifiedName.begin(), unifiedName.end(), unifiedName.begin(), ::toupper);
+
+	size_t found = unifiedName.find(".H");
+
+	if (found != std::string::npos)
+		unifiedName.replace(found, std::string(".H").length(), "");
+
+	found = unifiedName.find(".HPP");
+
+	if (found != std::string::npos)
+		unifiedName.replace(found, std::string(".HPP").length(), "");
+
+	return includes.find(unifiedName) != includes.end();
 }
 
 bool Library::isnoreturn(const Token *ftok) const

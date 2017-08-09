@@ -767,10 +767,12 @@ Checking test.c...
     <title>Library configuration</title>
 
     <para>When external libraries are used, such as WinAPI, POSIX, gtk, Qt,
-    etc, <literal>Cppcheck</literal> doesn't know how the external functions
-    behave. <literal>Cppcheck</literal> then fails to detect various problems
-    such as leaks, buffer overflows, possible null pointer dereferences, etc.
-    But this can be fixed with configuration files.</para>
+    etc, <literal>Cppcheck</literal> doesn't know about their includes and how
+    the external functions behave. <literal>Cppcheck</literal> then fails to
+    detect various problems such as leaks, buffer overflows, possible null
+    pointer dereferences, etc. and because of the missing includes, a lot of 
+	unnecessary errors are output. But this can be fixed with 
+	configuration files.</para>
 
     <para>Cppcheck already contains configurations for several libraries. They
     can be loaded as described below. Note that the configuration for the
@@ -1493,6 +1495,55 @@ Checking unusedvar.cpp...
     &lt;/access&gt;
   &lt;/container&gt;
 &lt;/def&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>include</title>
+
+      <para>To specify the system includes, <literal>&lt;include&gt;</literal> tags can be used.
+      The specified system includes don't produce <literal>Cppcheck cannot find all the 
+      include files (use --check-config for details)</literal> message.</para>
+
+      <para>Includes are identified by their name, specified in the <literal>name</literal>
+      attribute. The name is a comma-separated list of include names. For includes in
+      sub folders, provide all their name combination. The names are case-insensitive and
+      the file suffix <literal>.h</literal> or <literal>.hpp</literal> is not necessary 
+      in the configuration. Overlapping includes are merged.</para>
+
+      <programlisting>#include &lt;MyLib/MyHeader.h&gt;
+
+int main(int argc, char* argv[])
+{
+   return 0;
+}</programlisting>
+
+      <para>Cppcheck with <literal>--enable=all</literal> normally produce 
+      information output for the code:</para>
+
+      <programlisting># cppcheck.exe --enable=all include.cpp
+Checking include.cpp ...
+(information) Cppcheck cannot find all the include files (use --check-config for details)</programlisting>
+
+      <para>If a proper <literal>mylib.cfg</literal> is provided, the information
+      output are avoided:</para>
+
+      <programlisting># cppcheck --enable=all --library=mylib include.cpp 
+Checking include.cpp...</programlisting>
+
+      <para>Here is a minimal <literal>mylib.cfg</literal> file:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;include name="MyLib/MyHeader"/&gt;
+&lt;/def&gt;</programlisting>
+
+      <para>Or if support <literal>#include &lt;MyHeader.h&gt;</literal> also, here is the 
+      extented <literal>mylib.cfg</literal> file:</para>
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;def&gt;
+  &lt;include name="MyLib/MyHeader,MyHeader"/&gt;
+&lt;/def&gt;</programlisting>
+
     </section>
   </chapter>
 

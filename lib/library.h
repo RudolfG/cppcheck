@@ -281,6 +281,10 @@ public:
     bool isLeakIgnore(const std::string& functionName) const;
     bool isFunctionConst(const std::string& functionName, bool pure) const;
 
+
+	std::set<std::string> includes;
+	bool isSystemIncludeInConfigFile(const std::string& includeName) const;
+
     bool isboolargbad(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->notbool;
@@ -429,6 +433,15 @@ public:
     }
 
 private:
+	/*!
+	   This function load the value of the include xml node
+
+	   \hint Currently only the name supported, therefore the other parameter currently not used!
+	   \param node currenty not used
+	   \param unknown_elements currently not used
+	   \return Currently always OK
+	*/
+	Error loadInclude(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
     // load a <function> xml node
     Error loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
 

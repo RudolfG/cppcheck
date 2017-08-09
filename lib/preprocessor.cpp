@@ -715,6 +715,10 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
     const std::string fname = Path::fromNativeSeparators(filename);
     if (_settings.nomsg.isSuppressed("missingInclude", fname, linenr))
         return;
+
+	if (_settings.library.isSystemIncludeInConfigFile(header))
+		return;
+
     if (headerType == SystemHeader && _settings.nomsg.isSuppressed("missingIncludeSystem", fname, linenr))
         return;
 
