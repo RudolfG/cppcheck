@@ -381,6 +381,10 @@
         </oneOrMore>
       </element>
 
+      <element name="include">
+        <attribute name="name"><ref name="DATA-INCLUDE-NAME"/></attribute>
+      </element>
+
     </choice>
   </zeroOrMore>
 </element>
@@ -409,6 +413,12 @@
   <define name="DATA-EXTNAME">
     <data type="string">
       <param name="pattern">[a-zA-Z_][a-zA-Z_0-9:,]*</param>
+    </data>
+  </define>
+
+  <define name="DATA-INCLUDE-NAME">
+    <data type="string">
+      <param name="pattern">[a-zA-Z_][a-zA-Z_0-9:,/.-]*</param>
     </data>
   </define>
 
